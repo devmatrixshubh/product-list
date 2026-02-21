@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>स्पार्कल डीलमैट्रिक्स – एफिलिएट स्टोर</title>
+    <!-- फॉन्ट अवसम & मटेरियल आइकन (स्पार्कल के लिए) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+        }
+
+        body {
+            background: #f0f4fa;
+            color: #1e2a3a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ===== रिपल एनिमेशन की तैयारी ===== */
+        .ripple-section {
+            position: relative;
+            background: #eaf0f9;
+            margin: 1.5rem 2rem 0.5rem 2rem;
+            border-radius: 70px 70px 30px 30px;
+            padding: 1.2rem 2rem;
+            text-align: center;
+            border: 1px solid #cddbe9;
+            overflow: hidden;   /* रिपल को कंटेनर के अंदर ही रखने के लिए */
+            box-shadow: 0 6px 14px rgba(0,40,70,0.08);
+        }
+
+        /* वेलकम टेक्स्ट (जिस पर रिपल होगा) */
+        .welcome-ripple-text {
+            font-size: 2.4rem;
+            font-weight: 600;
+            color: #103c5c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 5;
+            text-shadow: 0 2px 5px rgba(255,255,255,0.5);
+        }
+
+        .welcome-ripple-text i {
+            color: #ff9900;
+            font-size: 2.6rem;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+
+        /* रिपल एफेक्ट के लिए pseudo-element */
+        .ripple-section::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 180, 40, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 0 0 rgba(255, 153, 0, 0.3);
+            animation: rippleWave 3s infinite ease-out;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        @keyframes rippleWave {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 153, 0, 0.5);
+                width: 5px;
+                height: 5px;
+                background: rgba(255, 200, 90, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 0 30px rgba(255, 153, 0, 0), 0 0 0 60px rgba(255, 200, 100, 0);
+                width: 60px;
+                height: 60px;
+                background: rgba(255, 180, 40, 0.1);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 153, 0, 0);
+                width: 5px;
+                height: 5px;
+                background: rgba(255, 180, 40, 0.2);
+            }
+        }
+
+        /* स्पार्कल बटन वाला कार्ड / हीरो सेक्शन */
+        .sparkle-hero {
+            background: linear-gradient(145deg, #ffffff 0%, #f5faff 100%);
+            margin: 0.8rem 2rem 1.5rem 2rem;
+            padding: 2rem 2rem 2.2rem 2rem;
+            border-radius: 70px;
+            box-shadow: 0 12px 28px -8px rgba(0, 65, 102, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(150, 190, 230, 0.5);
+            position: relative;
+            backdrop-filter: blur(2px);
+        }
+
+        .sparkle-hero p {
+            font-size: 1.5rem;
+            color: #1a4a6b;
+            font-weight: 400;
+            margin-bottom: 2rem;
+            letter-spacing: 0.3px;
+        }
+
+        /* स्पार्कल बटन -- खूबसूरत sparkle निकलेगा tap करते ही */
+        .sparkle-button {
+            background: #0b2b4f;
+            color: white;
+            border: none;
+            padding: 1.2rem 4rem 1.2rem 3rem;
+            font-size: 2rem;
+            font-weight: 700;
+            border-radius: 120px;
+            cursor: pointer;
+            box-shadow: 0 10px 20px -5px #022b44, 0 0 0 2px #ffd966 inset;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            transition: 0.2s;
+            position: relative;
+            overflow: visible;
+            border: 2px solid #f9c74f;
+        }
+
+        .sparkle-button i {
+            font-size: 2.3rem;
+            color: #ffd966;
+            filter: drop-shadow(0 0 6px gold);
+        }
+
+        .sparkle-button:hover {
+            background: #123b5e;
+            transform: scale(1.02);
+            box-shadow: 0 16px 28px -8px #011b2b;
+        }
+
+        /* स्पार्कल इफेक्ट के लिए कैनवास / JS से पार्टिकल */
+        #sparkle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;  /* बटन काम करता रहे */
+            z-index: 9999;
+            display: none; /* पहले छुपा, बटन दबने पर दिखे */
+        }
+
+        /* बाकी प्रोफेशनल स्टाइल (पिछले जैसे) */
+        .top-bar {
+            background: #ffffff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            padding: 0.8rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            border-bottom: 2px solid #eaeef2;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #0b2b4f;
+        }
+
+        .logo-area i {
+            font-size: 2.2rem;
+            color: #2a6f97;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 2rem;
+            padding: 2rem 2rem 3rem 2rem;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .product-card {
+            background: #ffffff;
+            border-radius: 28px;
+            padding: 1.6rem 1.4rem 1.8rem 1.4rem;
+            box-shadow: 0 10px 25px rgba(0, 30, 60, 0.05);
+            transition: 0.2s;
+            border: 1px solid #dee7ef;
+        }
+
+        .product-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 25px 30px -10px rgba(20, 60, 120, 0.15);
+        }
+
+        .product-image {
+            width: 100%;
+            aspect-ratio: 1/1;
+            background: #fafcff;
+            border-radius: 20px;
+            margin-bottom: 1.2rem;
+            overflow: hidden;
+            border: 1px solid #e2eaf1;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .product-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.6rem;
+            color: #00263b;
+        }
+
+        .product-description {
+            color: #2e475d;
+            font-size: 0.95rem;
+            margin-bottom: 1.6rem;
+            border-left: 3px solid #ffb75c;
+            padding-left: 0.9rem;
+            background: #f8fafd;
+            border-radius: 0 8px 8px 0;
+            padding: 0.7rem 1rem;
+        }
+
+        .affiliate-btn {
+            background: #ff9900;
+            color: #111;
+            font-weight: 600;
+            padding: 0.9rem 1rem;
+            border-radius: 60px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            text-decoration: none;
+            transition: 0.15s;
+            border: 1px solid #e58100;
+            width: 100%;
+        }
+
+        .affiliate-btn:hover {
+            background: #e56f00;
+            color: white;
+        }
+
+        .site-footer {
+            background: #ffffffd9;
+            border-top: 1px solid #cfdeed;
+            padding: 1.5rem 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: auto;
+            color: #1e3d5e;
+        }
+
+        .footer-copy {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        /* शुरुआत में सिर्फ बटन और वेलकम दिखे, प्रोडक्ट छुपे */
+        .product-grid {
+            display: none; /* पहले छुपा दिया */
+        }
+
+        /* जब एक्टिव होगा तब दिखेगा */
+        .product-grid.show-products {
+            display: grid;
+        }
+
+        @media (max-width: 580px) {
+            .ripple-section { margin: 1rem 1rem 0.5rem 1rem; padding: 1rem; }
+            .welcome-ripple-text { font-size: 1.8rem; }
+            .sparkle-hero { margin: 0.8rem 1rem 1.5rem; padding: 1.5rem; }
+            .sparkle-button { font-size: 1.5rem; padding: 1rem 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- कैनवास जो स्पार्कल दिखाएगा (शुरू में hidden) -->
+<canvas id="sparkle-canvas"></canvas>
+
+<!-- header logo -->
+<div class="top-bar">
+    <div class="logo-area">
+        <i class="fas fa-bolt"></i>
+        <div class="logo-text">deal<span style="font-weight:300;">Matrix</span></div>
+    </div>
+    <div style="color: #204f73;"><i class="fas fa-map-pin"></i> affiliate hub</div>
+</div>
+
+<!-- ===== रिपल इफेक्ट के साथ वेलकम टेक्स्ट ===== -->
+<div class="ripple-section">
+    <div class="welcome-ripple-text">
+        <i class="fas fa-hand-peace"></i> welcome to the listing product <i class="fas fa-star" style="color: #f5b342;"></i>
+    </div>
+    <!-- रिपल pseudo-element से ही आ रहा है -->
+</div>
+
+<!-- ===== स्पार्कल बटन – यही सबसे पहले दिखेगा और इसी पर टैप करके प्रोडक्ट खुलेंगे ===== -->
+<div class="sparkle-hero" id="dealMatrixSection">
+    <p><i class="fas fa-gem" style="color: #0291d4;"></i> अनमोल डील्स की दुनिया में आपका स्वागत</p>
+    <!-- इस बटन को दबाते ही स्पार्कल और प्रोडक्ट दिखेंगे -->
+    <button class="sparkle-button" id="sparkleTriggerBtn">
+        </i> ✦ dealMatrix ✦ <i class="fas fa-crown"></i>
+    </button>
+    <!-- छोटा संकेत -->
+    <div style="margin-top: 1rem; font-size: 1rem; color: #34658b;"><i class="fas fa-fingerprint"></i>  Tap Here  – </div>
+</div>
+
+<!-- 10 products grid (पहले छुपा हुआ है, बटन दबने पर show-products क्लास जुड़ेगा) -->
+<div class="product-grid" id="productGrid">
+    <!-- product 1 to 10 (same as before) -->
+    <div class="product-card"><div class="product-image">
+        <img src="link1.png" alt=""></div>
+        <div class="product-name">DOT & KEY Vitamin C + E Super Bright Gel Face Wash</div>
+        <div class="product-description">DOT & KEY Vitamin C + E Super Bright Gel Face Wash For Glowing And Brightening Skin | All Skin Types|With Triple Vitamin C| Face Wash For Women & Men|100 Ml
+Visit the DOT & KEY Store.</div>
+        <a href="https://amzn.to/46j5cXN" target="_blank" class="affiliate-btn">
+        <i class="fas fa-crown"></i> Amazon पर देखें</a>
+    </div>
+
+    <div class="product-card"><div class="product-image">
+        <img src="link2.png" alt=""></div>
+        <div class="product-name">Mamaearth Rice Dewy Bright Face Wash</div>
+        <div class="product-description">Mamaearth Rice Dewy Bright Face Wash With Rice Water & Niacinamide for Glass Skin , For Hydrated & Even skin Tone , Glowing & Brightening , Korean skin Care Product , For All skin Types , For Men & Women ,100 ml
+Visit the Mamaearth Store</div>
+        <a href="https://amzn.to/4cKhFHQ" target="_blank" class="affiliate-btn">
+        <i class="fas fa-crown"></i> Amazon लिंक</a>
+    </div>
+
+    <div class="product-card"><div class="product-image">
+        <img src="link3.png" alt=""></div>
+        <div class="product-name">Foxtale Vitamin C Super Glow Face Wash</div>
+        <div class="product-description">Foxtale Vitamin C Super Glow Face Wash with Papaya enzyme  Reduces Tan  Boosts Glow  Gently Exfoliates & Brightens Skin  Reduces Pigmentation  Face Wash for Men & Women- 100ml</div><a href="https://amzn.to/46j5vSr" target="_blank" class="affiliate-btn">
+        <i class="fas fa-crown"></i> Amazon प्राइस</a>
+    </div>
+    <div class="product-card"><div class="product-image">
+        <img src="link4.png" alt=""></div>
+        <div class="product-name">DERMATOUCH Bright & Even Tone Face Wash</div>
+        <div class="product-description">DERMATOUCH Bright & Even Tone Face Wash with Niacinamide, Vitamin E and Kojic Acid | Daily Gentle Face Cleanser For Tan, Pigmentation, Uneven Tone - 30G</div>
+        <a href="https://amzn.to/4aJ0FPE" target="_blank" class="affiliate-btn">
+        <i class="fas fa-crown"></i> Amazon ऑफर</a>
+    </div>
+    <div class="product-card"><div class="product-image">
+        <img src="link5.png" alt=""></div>
+        <div class="product-name">Foxtale Gentle Hydrating Face Wash</div>
+        <div class="product-description">Foxtale Gentle Hydrating Face Wash with Hyaluronic Acid, Vitamin B5 | Deep Pore Cleansing | Dirt Control | Make-up Remover | Cleanser For Men & Women | All Skin Types | 100 ml</div>
+        <a href="https://amzn.to/4aCSuo1" target="_blank" class="affiliate-btn">
+        <i class="fas fa-crown"></i> Amazon खरीदें</a>
+    </div>
+    <div class="product-card"><div class="product-image">
+        <img src="link6.png" alt=""></div>
+        <div class="product-name">Cosrx Advanced Snail 96 Mucin Power Essence (100ml)</div>
+        <div class="product-description">COSRX Advanced Snail 96 Mucin Power Essence comprises of 96% skin friendly snail secretion filtrate that is effective at repairing damaged skin, improving skin elasticity and maintaining hydration level all day long. It only contains essential ingredients, that nourish, repair and revitalise the skin. Snail mucin has the ability to repair everything from dry patches, to acne breakouts while helping zap hyperpigmentation, so with loyal use your skin will glow.</div>
+        <a href="https://amzn.to/4b6MDI7" target="_blank" class="affiliate-btn">
+        <i class="fas fa-crown"></i> Amazon डील</a>
+    </div>
+    <div class="product-card"><div class="product-image">
+        <img src="link7.png" alt=""></div>
+        <div class="product-name">Mamaearth Ubtan Natural Face Wash </div>
+        <div class="product-description">Mamaearth Ubtan Face Wash is a natural face wash made with Turmeric and Saffron, known for removing sun tan and restoring your natural glow. It contains Walnut Beads that gently exfoliate dead skin cells, making your skin smooth and bright. This face wash is 100% toxin-free — no Sulfates, Parabens, or artificial colors. It is dermatologically tested and safe for all skin types. Enriched with natural oils like Carrot Seed, Orange, and Patchouli Oil, it keeps your skin fresh, clean, and healthy.</div>
+        <a href="https://amzn.to/474wXUf" target="_blank" class="affiliate-btn">
+        <i class="fas fa-crown"></i> Amazon प्राइस</a>
+    </div>
+
+    <div class="product-card"><div class="product-image">
+       <img src="link8.png" alt="">
+       </div>
+       <div class="product-name">Mirabelle Korea Red Rice Deep Cleansing Face Wash for Glowing Skin 150 ML  Face Cleanser for Women & men Korean Skin Care</div>
+       <div class="product-description"> Minimalist 2% Salicylic Acid + Red Rice Extract Face Wash is a deep-cleansing face wash made for acne-prone and dull skin. It contains Red Rice Ferment which removes dirt, excess oil, and impurities while gently exfoliating to reveal brighter skin. The 2% Salicylic Acid fights acne-causing bacteria, reduces breakouts, and protects skin from pollution damage. It also strengthens the skin barrier, maintains healthy microbiome, and keeps skin hydrated. The combination of Red Rice and Papain helps reduce dullness and promotes an even skin tone. Compared to regular rice water, Red Rice provides more nourishment and a better cleansing experience. Plus, it's authentically made in Korea with high-quality ingredients.</div>
+       <a href="https://amzn.to/46WH0dV" target="_blank" class="affiliate-btn">
+       <i class="fas fa-crown"></i> Amazon लिंक</a>
+    </div>
+
+    <div class="product-card"><div class="product-image">
+        <img src="link9.png" alt=""></div>
+        <div class="product-name">DEYGA face wash</div><div class="product-description">Deyga Vitamin C Foaming Face Wash | Built-in Brush for Deep Cleansing | Tightens Pores | Hydrating | Bright & Glowing Skin | For Men & Women | 100 ml</div>
+        <a href="https://amzn.to/4tV38j1" target="_blank" class="affiliate-btn">
+        <i class="fas fa-crown"></i> Amazon देखें</a>
+    </div>
+
+<div class="product-card"><div class="product-image">
+        <img src="link10.png" alt=""></div>
+        <div class="product-name">Forest Essentials Ayurvedic Purifying Face Wash with Saffron & Neem | For Normal to Oily Skin | Sulphate Free</div>
+        <div class="product-description">Neem infused Facial Cleanser is an ideal gentle and natural alternative to harsh Sulphate infused cleansers, and is especially designed for sensitive, acne prone and oily skin.</div>
+        <a href="https://amzn.to/4cCytAz" target="_blank" class="affiliate-btn">
+        <i class="fas fa-crown"></i> Amazon ऑफर</a></div>
+</div>
+
+<!-- फूटर कॉपीराइट डेट सहित -->
+<footer class="site-footer">
+    <div class="footer-copy"><i class="fas fa-copyright"></i> <span id="copyrightYear"></span> dealMatrix | all rights reserved</div>
+    <div class="footer-links"><a href="#">privacy</a><a href="#">terms</a><a href="#">contact</a></div>
+</footer>
+
+<script>
+    (function() {
+        // कॉपीराइट ईयर डालें
+        document.getElementById('copyrightYear').textContent = new Date().getFullYear();
+
+        // ---------- स्पार्कल कैनवास सेटअप ----------
+        const canvas = document.getElementById('sparkle-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let particles = [];
+        let animationFrame = null;
+        let active = false;   // क्या स्पार्कल चल रहे हैं?
+
+        function resizeCanvas() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        // स्पार्कल पार्टिकल क्लास
+        class Sparkle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 8;  // वेलोसिटी
+                this.vy = (Math.random() - 0.8) * 10 - 2; // थोड़ा ऊपर की ओर
+                this.size = Math.random() * 8 + 4;
+                this.life = 1.0;        // 1 से 0 तक फीका
+                this.decay = 0.01 + Math.random() * 0.02;
+                this.color = `hsl(${Math.random() * 60 + 30}, 100%, 65%)`; // पीला/नारंगी/सुनहरा
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += 0.1;   // हल्का ग्रैविटी
+                this.life -= this.decay;
+                this.size *= 0.99;
+            }
+            draw(ctx) {
+                ctx.globalAlpha = this.life * 0.9;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * 0.7, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                // चमक के लिए छोटी सफेद कोर
+                ctx.globalAlpha = this.life * 0.5;
+                ctx.beginPath();
+                ctx.arc(this.x-1, this.y-1, this.size*0.3, 0, Math.PI*2);
+                ctx.fillStyle = '#fff9e6';
+                ctx.fill();
+            }
+        }
+
+        function createSparkles(centerX, centerY, count = 35) {
+            for (let i = 0; i < count; i++) {
+                particles.push(new Sparkle(centerX, centerY));
+            }
+        }
+
+        function animateSparkles() {
+            if (!active && particles.length === 0) {
+                if (animationFrame) {
+                    cancelAnimationFrame(animationFrame);
+                    animationFrame = null;
+                    canvas.style.display = 'none';
+                }
+                return;
+            }
+            ctx.clearRect(0, 0, width, height);
+            // पार्टिकल अपडेट और निकालना
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update();
+                particles[i].draw(ctx);
+                if (particles[i].life <= 0.02 || particles[i].y > height + 50) {
+                    particles.splice(i, 1);
+                }
+            }
+            if (particles.length > 0 || active) {
+                animationFrame = requestAnimationFrame(animateSparkles);
+            } else {
+                canvas.style.display = 'none';
+                animationFrame = null;
+            }
+        }
+
+        function startSparklesFromButton(event) {
+            // बटन की पोजीशन लें
+            const rect = event.target.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            // कैनवस तैयार
+            if (!active) {
+                canvas.style.display = 'block';
+                resizeCanvas();
+                active = true;
+            }
+            // 45 स्पार्कल दाग दो
+            createSparkles(centerX, centerY, 48);
+
+            if (!animationFrame) {
+                animateSparkles();
+            }
+
+            // थोड़ी देर बाद भी स्पार्कल खत्म हो जाएंगे, active false जरूरी नहीं
+            setTimeout(() => {
+                if (particles.length === 0) {
+                    active = false;
+                    canvas.style.display = 'none';
+                    if (animationFrame) {
+                        cancelAnimationFrame(animationFrame);
+                        animationFrame = null;
+                    }
+                }
+            }, 3000);
+        }
+
+        // ---------- मुख्य तर्क : बटन दबने पर प्रोडक्ट दिखाओ ----------
+        const productGrid = document.getElementById('productGrid');
+        const sparkBtn = document.getElementById('sparkleTriggerBtn');
+        
+        // शुरू में प्रोडक्ट छुपे हैं (पहले से ही display:none;)
+        // बटन दबने पर show-products क्लास जोड़ें और स्पार्कल चलाएं
+        sparkBtn.addEventListener('click', function(e) {
+            // प्रोडक्ट ग्रिड दिखाएँ (अगर पहले से नहीं दिख रहा)
+            if (!productGrid.classList.contains('show-products')) {
+                productGrid.classList.add('show-products');
+            }
+
+            // स्पार्कल शुरू करें
+            startSparklesFromButton(e);
+
+            // प्रोडक्ट सेक्शन पर स्मूथ स्क्रॉल (खुलने का अहसास)
+            productGrid.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+
+            // थोड़ा सा बटन एनिमेशन
+            e.target.style.transform = 'scale(0.96)';
+            setTimeout(() => { e.target.style.transform = ''; }, 150);
+        });
+
+        // कैनवास छुपा कर रखो शुरू में
+        canvas.style.display = 'none';
+        resizeCanvas();
+
+        // ध्यान दें: असली अमेज़न लिंक ऊपर प्रोडक्ट कार्ड में लगे हैं, आपको सिर्फ अपना affiliate टैग बदलना है (tag=youraffiliate-21)
+    })();
+</script>
+
+<!-- नोट: असली अमेज़न लिंक लगाना न भूलें ऊपर प्रोडक्ट कार्ड में href बदलें और अपना affiliate ID लिखें -->
+</body>
+</html>
